@@ -18,6 +18,7 @@ Next steps:
 - study mindful programming, and other resources: test pushing things to github
 - read Rick's paper
 - wait for data
+- read Suha paper?
 
 Next steps January:
 - Meet the first week of class (Jan 21), send doodle poll
