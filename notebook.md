@@ -27,8 +27,8 @@ The `phyloscript_forClaudia.R` file is R script to import the community matrix a
 ## Analyses
 
 Next steps: We want to fit statistical/machine-learning models to accomplish two tasks:
-- feature selection: identify genes associated with antibiotic-resistance
-- prediction: for a given new genome, can we predict whether it will be antibiotic-resistant or not
+- feature selection: identify soil characteristics associated with plant growth/disease
+- prediction: for a given new soil, can we predict whether the plant will grow/be sick?
 
 Methods:
 - regression (we need to explore penalized regression because we have more features than individuals)
