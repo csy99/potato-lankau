@@ -44,6 +44,10 @@ Separately:
 - Was bacterial composition measured after experiment?
 - Are we concerned that there seem to be huge differences in yield between 2015 and 2017? Other causes like rain/weather? Maybe we do not care if we study datasets separatedly
 
+- How do clade richness and diversity relate to the bacteria information? In another word, how do we know which types of bacteria are in which clades (based on units distance from the tree root)?
+- How to define between the broad and fine phylogenetic scales?
+- Would the nutrients also increase the bacteria diversity so the plant outcomes might result from higher diversity? 
+
 
 # Analyses
 
