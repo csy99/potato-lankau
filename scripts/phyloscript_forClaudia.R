@@ -22,7 +22,8 @@ pruneddenovotree = prune.sample(potato2, denovotree)
 #to extract trees representing the bacterial taxa present in a given community
 # for instance, for community 1 (field CF1)
 #first, get rid of any taxa columns that have 0 sequences in this particular community
-comm1 = potato[1,]
+# comm1 = potato[1,]
+comm1 = potato2[1 , ]
 comm1 = comm1[colSums(comm1)>0]
 prunedtreecomm1 = prune.sample(comm1, denovotree)
 
