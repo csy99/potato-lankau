@@ -48,6 +48,20 @@ Separately:
 - How to define between the broad and fine phylogenetic scales?
 - Would the nutrients also increase the bacteria diversity so the plant outcomes might result from higher diversity? 
 
+## After meeting 2/5
+We identified different next steps:
+1) Put the data in a slightly different format (see whiteboard photo) in which we have now 84 rows (for all fields, all years, and both high/low nutrient), one column for "yield", one column for "nutrient level: high/low", one column for "year: 2015/2017", and then bacterial counts and diversity measures.
+    - Would be good to have a script that creates this table, and save as csv from the original datafiles (for reproducibility)
+
+2) We want to start with regression models and random forest on the real data, before we do "over-sampling"
+
+3) We want to start reading about over-sampling options:
+- SMOTE
+- K-means
+- SMOTE-R
+The first two are for classification problems (we can find a way to sample an actual number after a class is defined, normallly distributed around sample mean and variance?).
+The problem with over-sampling is over-fitting. We have to keep this in mind.
+
 
 # Analyses
 
