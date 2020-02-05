@@ -1,0 +1,93 @@
+---
+title: "Date_visualization"
+author: "Katherine"
+date: "2/4/2020"
+output: html_document
+---
+
+```{r library}
+library(ggplot2)
+require(gridExtra)
+library(ggpubr)
+```
+
+Read Dataset
+```{r read dataset}
+potatorar = read.csv("potatometadata_forClaudia.csv")
+
+exploratory = potatorar[which(potatorar$Experiment == 2015), ]
+confirmatory  = potatorar[which(potatorar$Experiment == 2017), ]
+```
+
+1. High nutrients and low nutrients
+(I assume that fertilized means high nutrients??)
+```{r}
+p1 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity") +
+  ylim(0,400) + 
+  ggtitle("Exploratory Field & High")
+
+p2 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity") +
+  ylim(0,400) + 
+  ggtitle("Confirmatory Field & High")
+
+p3 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity") +
+  ylim(0,400) + 
+  ggtitle("Exploratory Field & Low")
+
+p4 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity") +
+  ylim(0,400) + 
+  ggtitle("Confirmatory Field & Low")
+
+grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+```
+
+2. diseases
+```{r}
+p5 = ggplot(data=exploratory, aes(x=FieldID, y=diffCSscore)) +
+  geom_bar(fill="#DD8888",stat="identity") +
+  ggtitle("Exploratory Field & disease severity")
+
+p6 = ggplot(data=confirmatory, aes(x=FieldID, y=diffCSscore)) +
+  geom_bar(fill="#6BBEEE",stat="identity") +
+  ggtitle("Confirmatory Field & disease severity")
+grid.arrange(p5, p6, nrow = 1, ncol = 2)
+```
+
+3.
+```{r}
+claderich_e = exploratory[, grep("claderich",colnames(potatorar))]
+claderich_e=cbind(exploratory$FieldID,claderich_e)
+
+claderich_c = confirmatory[, grep("claderich",colnames(potatorar))]
+claderich_c=cbind(confirmatory$FieldID,claderich_c)
+
+cladediv_e = exploratory[, grep("cladediv",colnames(potatorar))]
+cladediv_e=cbind(exploratory$FieldID,cladediv_e)
+
+cladediv_c = confirmatory[, grep("cladediv",colnames(potatorar))]
+cladediv_c=cbind(confirmatory$FieldID,cladediv_c)
+```
+
+```{r}
+ ggplot(data = claderich_e, fill = claderich_e0.1) +
+  geom_point(aes(x = exploratory$FieldID, y=claderich0.1)) +
+  geom_point(aes(x = exploratory$FieldID, y=claderich0.15 )) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.2)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.25)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.3)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.35)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.4)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.45)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.5)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.55 )) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.6)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.7)) +
+    geom_point(aes(x = exploratory$FieldID, y=claderich0.8)) +
+    ylab("claderich")+
+    xlab("Fields")
+  
+```
