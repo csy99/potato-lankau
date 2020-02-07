@@ -2,7 +2,6 @@
 - Members
     - Katherine Fu (Junior, CS, Stat)
     - Songyang Cheng (Junior, Information systems, CS)
-    - Haoming Chen (Junior, Stat, Math)
 
 # Details data
 - Data matrix $X \in R^{n \times p}$ where n is the number of plant plots, and p are characteristics of soil in plot (chemical, microbiome)
