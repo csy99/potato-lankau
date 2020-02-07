@@ -6,9 +6,7 @@ output: html_document
 ---
 
 ```{r library}
-library(ggplot2)
-require(gridExtra)
-library(ggpubr)
+library(tidyverse)
 ```
 
 Read Dataset
@@ -90,4 +88,18 @@ cladediv_c=cbind(confirmatory$FieldID,cladediv_c)
     ylab("claderich")+
     xlab("Fields")
   
+```
+
+Rearranging the tables
+```{r}
+nu = data.frame("nutrients" = c("high", "low"))
+nu = data.frame("nutrients" = nu[rep(seq_len(nrow(nu)), each = 13), ])
+t1 =  potatorar[, -which(colnames(potatorar)=="Mean.LowN.Microbe")]
+t2 =  potatorar[, -which(colnames(potatorar)=="Mean.Control.Microbe")]
+c1 =  cbind(t1,data.frame("nutrients" = nu[1:13,]))
+names(c1)[names(c1) == "Mean.Control.Microbe"] <- "yields"
+c2 = cbind(t2,data.frame("nutrients" = nu[14:26,]))
+names(c2)[names(c2) == "Mean.LowN.Microbe"] <- "yields"
+potatorar_update = rbind(c1, c2)
+potatorar_update = potatorar_update %>% arrange(potatorar_update$FieldID)
 ```
