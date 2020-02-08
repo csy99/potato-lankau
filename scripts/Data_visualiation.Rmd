@@ -101,13 +101,23 @@ t2 =  potatorar[, -which(colnames(potatorar)=="Mean.Control.Microbe")]
 t3 =  t1[, -which(colnames(t1)=="varNtub")]
 t4 =  t2[, -which(colnames(t2)=="varCtub")]
 
-c1 =  cbind(t3,data.frame("nutrients" = nu[1:13,]))
+t5 = t3[, -which(colnames(t3)=="Std.Err.Mean.LowN.Microbe")]  
+t6 =  t4[, -which(colnames(t4)=="Std.Err.Mean.Control.Microbe")]
+
+t7 = t5[, -which(colnames(t5)=="invVar_Ntub")]  
+t8 =  t6[, -which(colnames(t6)=="invVar_Ctub")]
+
+c1 =  cbind(t7,data.frame("nutrients" = nu[1:13,]))
 names(c1)[names(c1) == "Mean.Control.Microbe"] <- "yields_average"
 names(c1)[names(c1) == "varCtub"] <- "yields_variance"
+names(c1)[names(c1) == "Std.Err.Mean.Control.Microbe"] <- "yields_std.err.mean"
+names(c1)[names(c1) == "invVar_Ctub"] <- "yields_inverse.var"
 
-c2 = cbind(t4,data.frame("nutrients" = nu[14:26,]))
+c2 = cbind(t8,data.frame("nutrients" = nu[14:26,]))
 names(c2)[names(c2) == "Mean.LowN.Microbe"] <- "yields_average"
 names(c2)[names(c2) == "varNtub"] <- "yields_variance"
+names(c2)[names(c2) == "Std.Err.Mean.LowN.Microbe"] <- "yields_std.err.mean"
+names(c2)[names(c2) == "invVar_Ntub"] <- "yields_inverse.var"
 
 potatorar_update = rbind(c1, c2)
 potatorar_update = potatorar_update %>% arrange(potatorar_update$FieldID)
