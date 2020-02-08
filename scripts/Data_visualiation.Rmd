@@ -7,6 +7,7 @@ output: html_document
 
 ```{r library}
 library(tidyverse)
+library(glmnet)
 ```
 
 Read Dataset
@@ -96,10 +97,21 @@ nu = data.frame("nutrients" = c("high", "low"))
 nu = data.frame("nutrients" = nu[rep(seq_len(nrow(nu)), each = 13), ])
 t1 =  potatorar[, -which(colnames(potatorar)=="Mean.LowN.Microbe")]
 t2 =  potatorar[, -which(colnames(potatorar)=="Mean.Control.Microbe")]
-c1 =  cbind(t1,data.frame("nutrients" = nu[1:13,]))
-names(c1)[names(c1) == "Mean.Control.Microbe"] <- "yields"
-c2 = cbind(t2,data.frame("nutrients" = nu[14:26,]))
-names(c2)[names(c2) == "Mean.LowN.Microbe"] <- "yields"
+
+t3 =  t1[, -which(colnames(t1)=="varNtub")]
+t4 =  t2[, -which(colnames(t2)=="varCtub")]
+
+c1 =  cbind(t3,data.frame("nutrients" = nu[1:13,]))
+names(c1)[names(c1) == "Mean.Control.Microbe"] <- "yields_average"
+names(c1)[names(c1) == "varCtub"] <- "yields_variance"
+
+c2 = cbind(t4,data.frame("nutrients" = nu[14:26,]))
+names(c2)[names(c2) == "Mean.LowN.Microbe"] <- "yields_average"
+names(c2)[names(c2) == "varNtub"] <- "yields_variance"
+
 potatorar_update = rbind(c1, c2)
 potatorar_update = potatorar_update %>% arrange(potatorar_update$FieldID)
+write.csv(potatorar_update, file = "potatorar_update.csv", quote = FALSE)
 ```
+
+
