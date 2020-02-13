@@ -1,0 +1,97 @@
+---
+title: "Over_sampling"
+author: "katherine"
+date: "2/8/2020"
+output: html_document
+---
+
+```{r}
+library(imbalance)
+library(DMwR)
+library(ggplot2)
+```
+
+
+```{r}
+year = factor(potatorar_update$Experiment)
+ggplot(potatorar_update, aes(FieldID, yields_variance, color = year))+
+    ggtitle("Original dataset") +
+      geom_point()
+```
+
+```{r}
+original_data = ggplot(potatorar_update, aes(FieldID, yields_average, color = year))+
+    ggtitle("Original dataset") +
+      geom_point( alpha = 0.4)
+```
+
+add a column to see their yields are high or not
+```{r}
+yield_level = data.frame("yield_level" = c("large", "small"))
+yield_level = data.frame("yield_level" = yield_level[rep(seq_len(nrow(yield_level)), each = 26), ])
+new_table = cbind(potatorar_update,yield_level)
+```
+
+2015
+```{r}
+new_table_2015 = new_table[which(potatorar_update$Experiment == 2015), ]
+table(new_table_2015$yield_level)
+```
+
+SMOTE
+
+```{r}
+new_table_2015$FieldID = as.factor(new_table_2015$FieldID)
+temp = new_table_2015[, c(-2, -3, -41)]
+rownames(temp)=c()
+table(temp$yield_level)
+```
+
+```{r}
+#balanced.data <- DMwR::SMOTE(yield_level ~ ., temp)
+```
+
+RACOG
+
+```{r}
+new_Samples_2015 <- racog(temp, numInstances = 200, burnin = 20, lag = 10,
+                    classAttr = "yield_level")
+year_add = data.frame("Experiment" = "2015")
+year_add = data.frame("Experiment" = year_add[rep(seq_len(nrow(year_add)), each = 200), ])
+new_Samples_2015 = cbind(new_Samples_2015, year_add)
+
+new_Samples_2015 = new_Samples_2015[order(new_Samples_2015$FieldID),]
+new_Samples = rbind(new_table[, c(-3, -41)], new_Samples_2015)
+new_Samples$FieldID=strtoi(new_Samples$FieldID)
+str(new_Samples$FieldID)
+new_Samples$Experiment = as.factor(new_Samples$Experiment)
+str(new_Samples$yields_average)
+```
+
+```{r}
+modified_data = ggplot(new_Samples, aes(FieldID, yields_average, color = Experiment))+
+    ggtitle("Modified dataset") +
+      geom_point(alpha = 0.4)
+
+grid.arrange(original_data, modified_data, nrow = 1, ncol = 2)
+```
+
+RWO
+```{r}
+temp$FieldID=strtoi(temp$FieldID)
+rwo_new_samples = rwo(temp, numInstances = 100, classAttr = "yield_level")
+rwo_new_samples = cbind(rwo_new_samples, year_add)
+rwo_new_samples = rwo_new_samples[order(rwo_new_samples$FieldID),]
+rwo_new_samples = rwo_new_samples[-which(rwo_new_samples$FieldID<=0),]
+rwo_new_samples = rbind(new_table[, c(-3, -41)], rwo_new_samples)
+```
+
+```{r}
+rwo_modified_data = ggplot(rwo_new_samples, aes(FieldID, yields_average, color = Experiment))+
+    ggtitle("Modified dataset") +
+      geom_point(alpha = 0.4)
+
+grid.arrange(original_data, rwo_modified_data, nrow = 1, ncol = 2)
+```
+
+
