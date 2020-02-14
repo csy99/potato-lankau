@@ -40,11 +40,15 @@ Separately:
 ### Questions to ask Lankau group
 - How was "yield" measured?
 - How was "disease severity" measured?
+Higher means more susceptible to disease. 
 - Would it be possible to have the measures for the three plants (instead of only mean/sd)?
+Yes, if Professor Lankau can find the data. 
 - Was bacterial composition measured after experiment?
-- Are we concerned that there seem to be huge differences in yield between 2015 and 2017? Other causes like rain/weather? Maybe we do not care if we study datasets separatedly
+- Are we concerned that there seem to be huge differences in yield between 2015 and 2017? Other causes like rain/weather? Maybe we do not care if we study datasets separatedly. 
+No, we do not have to concern about this issue. Because other conditions (e.g., size of the plate) are not controlled tightly as well. 
 
 - How do clade richness and diversity relate to the bacteria information? In another word, how do we know which types of bacteria are in which clades (based on units distance from the tree root)?
+Richness and diversity can be calculated using the combination of pylogenetic tree and the taxa data. 
 - How to define between the broad and fine phylogenetic scales?
 - Would the nutrients also increase the bacteria diversity so the plant outcomes might result from higher diversity? 
 
