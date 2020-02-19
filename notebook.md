@@ -67,6 +67,11 @@ The first two are for classification problems (we can find a way to sample an ac
 The problem with over-sampling is over-fitting. We have to keep this in mind.
 
 
+## After meeting 2/19
+- We want to first focus on selecting the "right" features (more informative/predictive), and then we only sample artificial data based on these features; we want to see exploratory plots on these important features vs yield/disease
+- Brian is selecting most predictive features based on random forest models. He will try also with PCA
+- Note: the diversity and enrichment measurements are not obtained directly from the taxa data. They need a phylogenetic tree as well, which we do not have. Rick will try to find an R script to collapse taxa based on the tree
+
 # Analyses
 
 Next steps: We want to fit statistical/machine-learning models to accomplish two tasks:
