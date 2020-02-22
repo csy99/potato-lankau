@@ -4,19 +4,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as st
 
-# normalize the whole dataframe (value type), and return the new dataframe, as well as the mean and standard deviation
-# of each column in the old dataframe
+# normalize the copy of old dataframe, and return the new dataframe, as well as the mean and standard deviation
 def normalization(df):
     mean = df.mean()
     std = df.std()
-    df = (df - mean) / std
-    return df, mean, std
+    new = df.copy()
+    new = (new - mean) / std
+    return new, mean, std
 
 
 # normalize the whole dataframe (value type) using a certain mu and sigma
 def normalization2(df, mu, sigma):
-    df = (df - mu) / sigma
-    return df
+    new = df.copy()
+    new = (new - mu) / sigma
+    return new
 
 # apply johnson transformation
 def johnson_transform(x):
@@ -66,5 +67,15 @@ def check_dist(x, fs=(20, 3), xlab="Dist", ylab="Freq", titlefont=20, axisfont=1
     fig.subplots_adjust(wspace=wspace)
     plt.show()
 
-
+def customized_heatmap(X, ax, annot=True, trim=True, cmap=sns.diverging_palette(240, 10, as_cmap=True),
+                       title='', title_size=20, xticklab=[], ylab='', label_size=15):
+    mask = np.zeros_like(X)
+    mask[np.triu_indices_from(mask)] = True
+    if trim:
+        sns.heatmap(X, mask=mask, cmap=cmap, annot=annot, square=True, ax=ax)
+    else:
+        sns.heatmap(X, cmap=cmap, annot=annot, ax=ax)
+    ax.set_title(title, fontsize=title_size)
+    ax.set_xticklabels(xticklab)
+    ax.set_ylabel(ylab, fontsize=label_size)
 
