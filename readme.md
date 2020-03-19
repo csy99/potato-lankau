@@ -19,3 +19,8 @@
 git clone https://github.com/solislemuslab/potato-lankau.git
 ```
 3. Inside this folder, create a subfolder called `data` where you will put the data. This folder is ignored in the `.gitignore` file, so nothing inside this folder will be pushed to github
+
+# Songyang's Files 
+- Python Scripts will be .py files
+- All visualization will be .ipynb files with naming rules: week number + date
+- a serious bug has been identified in week 6. Thus, week 3~5 work should not be cited. All analysis has been redone in week 6. For the sake of integrity, the buggy files are not deleted. 
