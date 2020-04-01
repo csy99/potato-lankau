@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as st
 
+
 # normalize the copy of old dataframe, and return the new dataframe, as well as the mean and standard deviation
 def normalization(df):
     mean = df.mean()
@@ -19,6 +20,7 @@ def normalization2(df, mu, sigma):
     new = (new - mu) / sigma
     return new
 
+
 # apply johnson transformation
 def johnson_transform(x):
     gamma, eta, epsilon, lbda = st.johnsonsu.fit(x)
@@ -29,20 +31,23 @@ def johnson_transform(x):
 # apply inverse of johnson transformation
 def johnson_inverse(y, gamma, eta, epsilon, lbda):
     return lbda * np.sinh((y - gamma) / eta) + epsilon
-	
+
+
 def lognormal_transform(y):
     shape, loc, scale = st.lognorm.fit(y, floc=0)
     yt = np.log(y)
     return yt, shape, loc, scale
-	
+
+
 def lognormal_inverse(yt):
     y = np.exp(y)
     return y
 
+
 def check_dist(x, fs=(20, 3), xlab="Dist", ylab="Freq", titlefont=20, axisfont=15, hspace=0.4, wspace=0.2):
     fig = plt.figure(figsize=fs)
     fig.tight_layout()
-    
+
     ax1 = fig.add_subplot(1, 3, 1)
     ax1.set_title("Johnson SU", fontsize=titlefont)
     ax = sns.distplot(x, kde=False, fit=st.johnsonsu)
@@ -63,9 +68,10 @@ def check_dist(x, fs=(20, 3), xlab="Dist", ylab="Freq", titlefont=20, axisfont=1
     ax.set(xlabel=xlab, ylabel=ylab)
     ax.set_xlabel(xlab, fontsize=axisfont)
     ax.set_ylabel(ylab, fontsize=axisfont)
-    
+
     fig.subplots_adjust(wspace=wspace)
     plt.show()
+
 
 def customized_heatmap(X, ax, annot=True, trim=True, cmap=sns.diverging_palette(240, 10, as_cmap=True),
                        title='', title_size=20, xticklab=[], ylab='', label_size=15):
@@ -78,4 +84,3 @@ def customized_heatmap(X, ax, annot=True, trim=True, cmap=sns.diverging_palette(
     ax.set_title(title, fontsize=title_size)
     ax.set_xticklabels(xticklab)
     ax.set_ylabel(ylab, fontsize=label_size)
-

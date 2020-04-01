@@ -56,7 +56,7 @@ def xgb_fit(alg, X, y, xVal=None, yVal=None, train_cv=True, cv_folds=5, early_st
 
     plt.figure(figsize=fs)
     feat_imp = pd.Series(alg.get_booster().get_fscore()).sort_values(ascending=False)
-    tmp = feat_imp[:21]  # only plot the 20 most important features
+    tmp = feat_imp[:21][::-1]  # only plot the 20 most important features
     tmp.plot(kind='barh', color="blue")
     plt.title('Feature Importance (limited to first 20)', fontsize=20)
     plt.ylabel('Feature Relative Importance', fontsize=15)
