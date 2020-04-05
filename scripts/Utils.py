@@ -22,15 +22,15 @@ def normalization2(df, mu, sigma):
 
 
 # apply johnson transformation
-def johnson_transform(x):
-    gamma, eta, epsilon, lbda = st.johnsonsu.fit(x)
-    yt = gamma + eta * np.arcsinh((x - epsilon) / lbda)
+def johnson_transform(y):
+    gamma, eta, epsilon, lbda = st.johnsonsu.fit(y)
+    yt = gamma + eta * np.arcsinh((y - epsilon) / lbda)
     return yt, gamma, eta, epsilon, lbda
 
 
 # apply inverse of johnson transformation
-def johnson_inverse(y, gamma, eta, epsilon, lbda):
-    return lbda * np.sinh((y - gamma) / eta) + epsilon
+def johnson_inverse(yt, gamma, eta, epsilon, lbda):
+    return lbda * np.sinh((yt - gamma) / eta) + epsilon
 
 
 def lognormal_transform(y):
