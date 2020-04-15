@@ -4,12 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.metrics import mean_squared_error
-from xgboost import XGBRegressor
-from xgboost import plot_importance
+from xgboost import XGBRegressor, plot_importance
 import xgboost as xgb
+from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 
 import Utils
 
@@ -126,6 +125,29 @@ def ridge_fit(ridge, X, y, xVal=None, yVal=None, trans_param=None, fs=(9, 3)):
     print("RMSE for validation set: {}".format(np.sqrt(mse_val)))
 
     return ridge.coef_, ridge.intercept_
+
+
+def linear_fit(lin_model, X, y, xVal=None, yVal=None, trans_param=None, fs=(9, 3)):
+    lin_model.fit(X, y)
+    # data transformation
+    gamma, eta, epsilon, lbda = trans_param
+    ytrain_orig = Utils.johnson_inverse(y, gamma, eta, epsilon, lbda)
+    yval_orig = Utils.johnson_inverse(yVal, gamma, eta, epsilon, lbda)
+
+    # prediction
+    train_pred = pd.Series(lin_model.predict(X))
+    train_pred_orig = Utils.johnson_inverse(train_pred, gamma, eta, epsilon, lbda)
+    val_pred = pd.Series(lin_model.predict(xVal))
+    val_pred_orig = Utils.johnson_inverse(val_pred, gamma, eta, epsilon, lbda)
+
+    # Print model report:
+    mse_train = mean_squared_error(train_pred_orig, ytrain_orig)
+    mse_val = mean_squared_error(val_pred_orig, yval_orig)
+    print("\nLinear Regression Model Report")
+    print("RMSE for training set: {}".format(np.sqrt(mse_train)))
+    print("RMSE for validation set: {}".format(np.sqrt(mse_val)))
+
+    return lin_model.coef_, lin_model.intercept_
 
 
 def random_search(alg, tuning, X, y, xVal=None, yVal=None, trans_param=None, n_iter=100, cv=5, seed=2):
