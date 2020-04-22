@@ -1,0 +1,266 @@
+---
+title: "Date_visualization"
+author: "Katherine"
+date: "2/4/2020"
+output: html_document
+---
+
+```{r library}
+library(tidyverse)
+library(glmnet)
+library(cowplot)
+```
+
+Read Dataset
+```{r read dataset}
+potatorar = read.csv("potatometadata_forClaudia.csv")
+
+exploratory = potatorar[which(potatorar$Experiment == 2015), ]
+confirmatory  = potatorar[which(potatorar$Experiment == 2017), ]
+```
+
+1. High nutrients and low nutrients
+(I assume that fertilized means high nutrients??)
+```{r}
+p1 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity", fill="#85A392") +
+  ylim(0,400) + 
+  ggtitle("Exploratory Field & High")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p2 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity", fill="#85A392") +
+  ylim(0,400) + 
+  ggtitle("Confirmatory Field & High")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p3 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity", fill="#85A392") +
+  ylim(0,400) + 
+  ggtitle("Exploratory Field & Low")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p4 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity", fill="#85A392") +
+  ylim(0,400) + 
+  ggtitle("Confirmatory Field & Low")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+title <- ggdraw() + 
+  draw_label(
+    "Metadata Graph (Yields)",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row = plot_grid(p1,p2,p3,p4)
+plot_grid(
+  title, plot_row,
+  ncol = 1,
+  # rel_heights values control vertical title margins
+  rel_heights = c(0.1, 1)
+)
+```
+
+
+log transformation
+```{r}
+log_transformation <- function(x) {
+return (log(x))
+}
+```
+
+
+```{r}
+exploratory = potatorar[which(potatorar$Experiment == 2015), ]
+exploratory$Mean.Control.Microbe = log_transformation(exploratory$Mean.Control.Microbe)
+exploratory$Mean.LowN.Microbe = log_transformation(exploratory$Mean.LowN.Microbe)
+confirmatory  = potatorar[which(potatorar$Experiment == 2017), ]
+confirmatory$Mean.Control.Microbe = log_transformation(confirmatory$Mean.Control.Microbe)
+confirmatory$Mean.LowN.Microbe = log_transformation(confirmatory$Mean.LowN.Microbe)
+```
+
+```{r}
+p5 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity", fill="#6983aa") +
+  ylim(0,10) + 
+  ggtitle("Exploratory Field & High")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p6 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity", fill="#6983aa") +
+  ylim(0,10) + 
+  ggtitle("Confirmatory Field & High")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p7 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity", fill="#6983aa") +
+  ylim(0,10) + 
+  ggtitle("Exploratory Field & Low")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p8 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity", fill="#6983aa") +
+  ylim(0,10) + 
+  ggtitle("Confirmatory Field & Low")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+```{r}
+title <- ggdraw() + 
+  draw_label(
+    "Graph with Log Transformation",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row = plot_grid(p5,p6,p7,p8)
+plot_grid(
+  title, plot_row,
+  ncol = 1,
+  # rel_heights values control vertical title margins
+  rel_heights = c(0.1, 1)
+)
+```
+
+Normalizaiton using updated data tabel
+```{r}
+normalize <- function(x) {
+return ((x - min(x)) / (max(x) - min(x)))
+}
+```
+
+
+```{r}
+exploratory = potatorar[which(potatorar$Experiment == 2015), ]
+exploratory$Mean.Control.Microbe = normalize(exploratory$Mean.Control.Microbe)
+exploratory$Mean.LowN.Microbe = normalize(exploratory$Mean.LowN.Microbe)
+confirmatory  = potatorar[which(potatorar$Experiment == 2017), ]
+confirmatory$Mean.Control.Microbe = normalize(confirmatory$Mean.Control.Microbe)
+confirmatory$Mean.LowN.Microbe = normalize(confirmatory$Mean.LowN.Microbe)
+```
+
+```{r}
+p9 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity", fill="#f2a365") +
+  ylim(0,2.5) + 
+  ggtitle("Exploratory Field & High")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p10 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.Control.Microbe)) +
+  geom_bar(stat="identity", fill="#f2a365") +
+  ylim(0,2.5) + 
+  ggtitle("Confirmatory Field & High")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p11 = ggplot(data=exploratory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity", fill="#f2a365") +
+  ylim(0,2.5) + 
+  ggtitle("Exploratory Field & Low")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+p12 = ggplot(data=confirmatory, aes(x=FieldID, y=Mean.LowN.Microbe)) +
+  geom_bar(stat="identity", fill="#f2a365") +
+  ylim(0,2.5) + 
+  ggtitle("Confirmatory Field & Low")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+title <- ggdraw() + 
+  draw_label(
+    "Graph with Normalization",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row = plot_grid(p9,p10,p11,p12)
+plot_grid(
+  title, plot_row,
+  ncol = 1,
+  # rel_heights values control vertical title margins
+  rel_heights = c(0.1, 1)
+)
+```
+
+
+2. diseases
+```{r}
+p5 = ggplot(data=exploratory, aes(x=FieldID, y=diffCSscore)) +
+  geom_bar(fill="#DD8888",stat="identity") +
+  ggtitle("Exploratory Field & disease severity")
+
+p6 = ggplot(data=confirmatory, aes(x=FieldID, y=diffCSscore)) +
+  geom_bar(fill="#6BBEEE",stat="identity") +
+  ggtitle("Confirmatory Field & disease severity")
+grid.arrange(p5, p6, nrow = 1, ncol = 2)
+```
+
+3.
+```{r}
+claderich_e = exploratory[, grep("claderich",colnames(potatorar))]
+claderich_e=cbind(exploratory$FieldID,claderich_e)
+
+claderich_c = confirmatory[, grep("claderich",colnames(potatorar))]
+claderich_c=cbind(confirmatory$FieldID,claderich_c)
+
+cladediv_e = exploratory[, grep("cladediv",colnames(potatorar))]
+cladediv_e=cbind(exploratory$FieldID,cladediv_e)
+
+cladediv_c = confirmatory[, grep("cladediv",colnames(potatorar))]
+cladediv_c=cbind(confirmatory$FieldID,cladediv_c)
+```
+
+Rearranging the tables
+```{r}
+nu = data.frame("nutrients" = c("high", "low"))
+nu = data.frame("nutrients" = nu[rep(seq_len(nrow(nu)), each = 13), ])
+t1 =  potatorar[, -which(colnames(potatorar)=="Mean.LowN.Microbe")]
+t2 =  potatorar[, -which(colnames(potatorar)=="Mean.Control.Microbe")]
+
+t3 =  t1[, -which(colnames(t1)=="varNtub")]
+t4 =  t2[, -which(colnames(t2)=="varCtub")]
+
+t5 = t3[, -which(colnames(t3)=="Std.Err.Mean.LowN.Microbe")]  
+t6 =  t4[, -which(colnames(t4)=="Std.Err.Mean.Control.Microbe")]
+
+t7 = t5[, -which(colnames(t5)=="invVar_Ntub")]  
+t8 =  t6[, -which(colnames(t6)=="invVar_Ctub")]
+
+c1 =  cbind(t7,data.frame("nutrients" = nu[1:13,]))
+names(c1)[names(c1) == "Mean.Control.Microbe"] <- "yields_average"
+names(c1)[names(c1) == "varCtub"] <- "yields_variance"
+names(c1)[names(c1) == "Std.Err.Mean.Control.Microbe"] <- "yields_std.err.mean"
+names(c1)[names(c1) == "invVar_Ctub"] <- "yields_inverse.var"
+
+c2 = cbind(t8,data.frame("nutrients" = nu[14:26,]))
+names(c2)[names(c2) == "Mean.LowN.Microbe"] <- "yields_average"
+names(c2)[names(c2) == "varNtub"] <- "yields_variance"
+names(c2)[names(c2) == "Std.Err.Mean.LowN.Microbe"] <- "yields_std.err.mean"
+names(c2)[names(c2) == "invVar_Ntub"] <- "yields_inverse.var"
+
+potatorar_update = rbind(c1, c2)
+potatorar_update = potatorar_update %>% arrange(potatorar_update$FieldID)
+potatorar_update$invVar_Csscore[is.na(potatorar_update$invVar_Csscore)] = 0
+write.csv(potatorar_update, file = "potatorar_update.csv", quote = FALSE)
+```
+
+
