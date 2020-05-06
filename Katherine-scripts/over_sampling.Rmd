@@ -1,0 +1,290 @@
+---
+title: "Over_sampling"
+author: "katherine"
+date: "2/8/2020"
+output: html_document
+---
+
+```{r}
+library(imbalance)
+library(ggplot2)
+require(gridExtra)
+```
+
+Original dataset graph
+```{r}
+year = factor(potatorar_update$Experiment)
+potatorar_update$yields_average = normalize(potatorar_update$yields_average)
+
+original = ggplot(potatorar_update, aes(FieldID, yields_average, color = year))+
+     ggtitle("Original dataset") +
+      geom_point()+
+     theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+
+
+Normalization
+```{r}
+normalize <- function(x) {
+return ((x - min(x)) / (max(x) - min(x)))
+}
+```
+
+add a column to see their yields are high or not (>200: large)
+```{r}
+yield_level = data.frame("yield_level" = c("large", "small"))
+yield_level = data.frame("yield_level" = yield_level[rep(seq_len(nrow(yield_level)), each = 26), ])
+potatorar_level = cbind(potatorar_update,yield_level)
+#potatorar_level$yields_average = normalize(potatorar_level$yields_average)
+```
+
+RWO
+https://www-sciencedirect-com.ezproxy.library.wisc.edu/science/article/pii/S1566253514000025?via%3Dihub
+
+2015
+```{r}
+new_table_2015 = potatorar_level[which(potatorar_level$Experiment == 2015), ]
+table(new_table_2015$yield_level)
+temp = new_table_2015[, c(-2, -3,-41)]
+
+new_table_2017 = potatorar_level[which(potatorar_level$Experiment == 2017), ]
+table(new_table_2017$yield_level)
+temp_17 = new_table_2017[, c(-2, -3,-41)]
+```
+
+```{r}
+set.seed(1)
+temp$FieldID=strtoi(temp$FieldID)
+rwo_new_samples = rwo(temp, numInstances = 100, classAttr = "yield_level")
+rwo_new_samples = rwo_new_samples[order(rwo_new_samples$FieldID),]
+rwo_new_samples = rwo_new_samples[-which(rwo_new_samples$FieldID<=0),]
+year_add = data.frame("Experiment" = "2015")
+year_add = data.frame("Experiment" = year_add[rep(seq_len(nrow(year_add)), each = 90), ])
+rwo_new_samples = cbind(rwo_new_samples, year_add)
+```
+
+```{r}
+set.seed(1)
+temp_17$FieldID=strtoi(temp_17$FieldID)
+rwo_new_samples_17 = rwo(temp_17, numInstances = 100, classAttr = "yield_level")
+rwo_new_samples_17 = rwo_new_samples_17[order(rwo_new_samples_17$FieldID),]
+year_add_17 = data.frame("Experiment" = "2017")
+year_add_17 = data.frame("Experiment" = year_add_17[rep(seq_len(nrow(year_add_17)), each = 100), ])
+rwo_new_samples_17 = cbind(rwo_new_samples_17, year_add_17)
+```
+
+```{r}
+oversampling_data = rbind(rwo_new_samples, rwo_new_samples_17)
+oversampling_data$yields_average = normalize(oversampling_data$yields_average)
+```
+
+Draw the graphs before and after oversampling
+```{r}
+par(mfrow=c(2,2))
+
+rwo_modified_data = ggplot(oversampling_data, aes(FieldID, yields_average, color = Experiment))+
+    ggtitle("Modified dataset") +
+      geom_point(alpha = 1)+
+     theme(plot.title = element_text(hjust = 0.5))
+plot_grid(original, rwo_modified_data, rel_widths = c(5.5, 6))
+```
+
+
+-------------------------USING MODIFIED DATA TO DO LASSO REGRESSION ---------------------------
+
+
+Get data for two different experiments
+```{r}
+exploratory = oversampling_data[which(oversampling_data$Experiment == 2015), ]
+confirmatory  = oversampling_data[which(oversampling_data$Experiment == 2017), ]
+```
+
+```{r}
+claderich_e = exploratory[, grep("claderich",colnames(exploratory))]
+claderich_e=cbind(exploratory$FieldID,claderich_e)
+
+claderich_c = confirmatory[, grep("claderich",colnames(confirmatory))]
+claderich_c=cbind(confirmatory$FieldID,claderich_c)
+
+cladediv_e = exploratory[, grep("cladediv",colnames(exploratory))]
+cladediv_e=cbind(exploratory$FieldID,cladediv_e)
+
+cladediv_c = confirmatory[, grep("cladediv",colnames(confirmatory))]
+cladediv_c=cbind(confirmatory$FieldID,cladediv_c)
+```
+
+Lasso 2015
+
+Split the data
+```{r}
+set.seed(86)
+Xmat <- as.matrix(cbind(cladediv_e[,grep("cladediv",colnames(cladediv_e))],                            claderich_e[,grep("claderich",colnames(claderich_e))]))
+Ymat <- oversampling_data$yields_average [which(oversampling_data$Experiment == 2015)]
+train = sample(1:nrow(Xmat), nrow(Xmat)/2)
+test = (-train)
+x_test = as.matrix(Xmat[test, ])
+x_train = as.matrix(Xmat[train,])
+y_test = Ymat[test]
+y_train = Ymat[train]
+```
+
+identifying best lamda
+```{r}
+set.seed(86)
+potatorar.lasso.cv <- cv.glmnet(x_train, y_train, nfold=5)
+plot(potatorar.lasso.cv)
+opt_lambda = potatorar.lasso.cv$lambda.min
+opt_lambda
+```
+
+Using this value, let us train the lasso model again.
+Checking the obs
+```{r}
+set.seed(86)
+potatorar.lasso<- glmnet(x_train, y_train, alpha = 1, lambda = opt_lambda)
+pred <- predict(potatorar.lasso, s = opt_lambda, newx = x_test)
+final <- cbind(y_test, pred)
+```
+
+Inspecting beta coefficients
+```{r}
+coef(potatorar.lasso)
+```
+
+```{r}
+#MSE
+MSE = sum((y_test - pred)^2)
+#AVG - test mean square error
+value <- mean((y_test - pred)^2)
+value
+```
+
+
+
+Lasso 2017
+
+Split the data
+```{r}
+set.seed(86)
+Xmat_17 <- as.matrix(cbind(cladediv_c[,grep("cladediv",colnames(cladediv_c))],                            claderich_c[,grep("claderich",colnames(claderich_c))]))
+Ymat_17 <- oversampling_data$yields_average [which(oversampling_data$Experiment == 2017)]
+                  
+train_17 = sample(1:nrow(Xmat_17), nrow(Xmat_17)/2)
+test_17 = (-train_17)
+x_test_17 = as.matrix(Xmat_17[test_17, ])
+x_train_17 = as.matrix(Xmat_17[train_17,])
+y_test_17 = Ymat_17[test_17]
+y_train_17 = Ymat_17[train_17]
+```
+
+identifying best lamda
+```{r}
+set.seed(86)
+potatorar.lasso.cv_17 <- cv.glmnet(x_train_17, y_train_17, nfold=5)
+plot(potatorar.lasso.cv_17)
+opt_lambda_17 = potatorar.lasso.cv_17$lambda.min
+opt_lambda_17
+```
+
+Using this value, let us train the lasso model again.
+Checking the obs
+```{r}
+potatorar.lasso_17<- glmnet(x_train_17, y_train_17, lambda = opt_lambda_17)
+pred_17 <- predict(potatorar.lasso_17, s = opt_lambda_17, newx = x_test_17)
+final_17 <- cbind(y_test_17, pred_17)
+final_17
+```
+
+Inspecting beta coefficients
+```{r}
+coef(potatorar.lasso_17)
+```
+```{r}
+#MSE
+MSE_2017 = sum((y_test_17 - pred_17)^2)
+#AVG - test mean square error
+value_17 <- mean((y_test_17 - pred_17)^2)
+value_17
+```
+
+
+ALL lasso
+
+```{r}
+set.seed(86)
+Xmat_all <- as.matrix(oversampling_data[,grep("clade",colnames(oversampling_data))])
+Ymat_all <- oversampling_data$yields_average 
+train_all = sample(1:nrow(Xmat_all), nrow(Xmat_all)/2)
+test_all = (-train_all)
+x_test_all = as.matrix(Xmat_all[test_all, ])
+x_train_all = as.matrix(Xmat_all[train_all,])
+y_test_all = Ymat_all[test_all]
+y_train_all = Ymat_all[train_all]
+```
+
+```{r}
+set.seed(86)
+potatorar.lasso.cv_all <- cv.glmnet(x_train_all, y_train_all, nfold=5)
+plot(potatorar.lasso.cv_all)
+opt_lambda_all = potatorar.lasso.cv_all$lambda.min
+opt_lambda_all
+```
+
+```{r}
+potatorar.lasso_all<- glmnet(x_train_all, y_train_all, lambda = opt_lambda_all)
+pred_all <- predict(potatorar.lasso_all, s = opt_lambda_all, newx = x_test_all)
+final_all <- cbind(y_test_all, pred_all)
+final_all
+```
+
+```{r}
+coef(potatorar.lasso_all)
+```
+
+```{r}
+#MSE
+sum_MSE = sum((y_test_all - pred_all)^2)
+#AVG - test mean square error
+mse_test_value <- mean((y_test_all - pred_all)^2)
+mse_test_value
+```
+
+
+Lasso + selected features
+```{r}
+selected_features = c("claderich0.1", "cladediv0.1", "claderich0.15", "cladediv0.15", "claderich0.2", "cladediv0.2", "claderich0.25", "cladediv0.25", "claderich0.3", "cladediv0.3", "claderich0.4", "claderich0.45", "cladediv0.45", "claderich0.5", "cladediv0.5", "claderich0.55", "cladediv0.55", "claderich0.6", "claderich0.7", "cladediv0.7", "claderich0.8","cladediv0.8")
+Xmat_selected = as.matrix(oversampling_data[,selected_features])
+Ymat_selected <- oversampling_data$yields_average
+                  
+train_selected = sample(1:nrow(Xmat_selected ), nrow(Xmat_selected )/2)
+test_selected  = (-train_selected )
+x_test_selected  = as.matrix(Xmat_selected [test_selected , ])
+x_train_selected  = as.matrix(Xmat_selected [train_selected ,])
+y_test_selected  = Ymat_selected[test_selected ]
+y_train_selected  = Ymat_selected[train_selected ]
+y_train_selected
+```
+
+```{r}
+set.seed(86)
+potatorar.lasso.cv_selected <- cv.glmnet(x_train_selected, y_train_selected, nfold=5)
+plot(potatorar.lasso.cv_selected)
+opt_lambda_selected = potatorar.lasso.cv_selected$lambda.min
+opt_lambda_selected
+```
+
+```{r}
+potatorar.lasso.cv_selected<- glmnet(x_train_selected, y_train_selected, lambda = opt_lambda_selected)
+pred_selected <- predict(potatorar.lasso.cv_selected, s = opt_lambda_selected, newx = x_test_selected)
+final_selected <- cbind(y_test_selected, pred_selected)
+final_selected
+```
+```{r}
+#MSE
+sum_selected = sum((y_test_selected - pred_selected)^2)
+#AVG - test mean square error
+mse_selected_value <- mean((y_test_selected - pred_selected)^2)
+mse_selected_value
+```

@@ -1,0 +1,58 @@
+---
+title: "linear_regression"
+author: "katherine"
+date: "2/8/2020"
+output: html_document
+---
+
+```{r}
+library(glmnet)
+library(RColorBrewer)
+library(Metrics)
+mypalette <- brewer.pal(6,"Set1")
+```
+
+```{r}
+normalize <- function(x) {
+return ((x - min(x)) / (max(x) - min(x)))
+}
+```
+
+Ridge regression using selected features
+```{r}
+selected_features_ridge = c("Experiment", "cladediv0.1","claderich0.1","claderich0.2","cladediv0.35", "cladediv0.7", "cladediv0.8","claderich0.45")
+Xmat_selected_ridge = as.matrix(potatorar_update[,selected_features_ridge])
+Ymat_selected_ridge <- potatorar_update$yields_average
+                  
+train_selected_ridge = sample(1:nrow(Xmat_selected_ridge ), nrow(Xmat_selected_ridge )/2)
+test_selected_ridge  = (-train_selected_ridge )
+x_test_selected_ridge  = as.matrix(Xmat_selected_ridge [test_selected_ridge , ])
+x_train_selected_ridge  = as.matrix(Xmat_selected_ridge [train_selected_ridge ,])
+y_test_selected_ridge  = Ymat_selected_ridge[test_selected_ridge ]
+y_train_selected_ridge  = Ymat_selected_ridge[train_selected_ridge]
+train_selected_ridge
+```
+
+
+```{r}
+set.seed(1)
+potatorar.ridge.selected<- glmnet(x_train_selected_ridge, y_train_selected_ridge,  alpha=0)
+pred_selected_ridge <- predict(potatorar.ridge.selected, newx = x_test_selected_ridge)
+final_selected_ridge <- cbind(y_test_selected_ridge, pred_selected_ridge)
+```
+
+```{r}
+set.seed(1)
+# Ridge regression, choosing lambda by cross-validation
+potatorar.ridge.cv <- cv.glmnet(x_train_selected_ridge, y_train_selected_ridge, alpha=0, nfold=5)
+plot(potatorar.ridge.cv)
+```
+
+```{r}
+#MSE
+sum_selected_ridge = sum((y_test_selected_ridge - pred_selected_ridge)^2)
+#AVG - test mean square error
+mse_selected_value_ridge <- mean((y_test_selected_ridge - pred_selected_ridge)^2)
+mse_selected_value_ridge
+```
+

@@ -1,0 +1,319 @@
+---
+title: "linear_regression"
+author: "katherine"
+date: "2/8/2020"
+output: html_document
+---
+
+```{r}
+library(glmnet)
+library(RColorBrewer)
+library(Metrics)
+mypalette <- brewer.pal(6,"Set1")
+```
+
+```{r}
+log_transformation <- function(x) {
+return (log(x))
+}
+```
+
+Get data for two different experiments
+```{r}
+potatorar_update = read.csv("potatorar_update.csv")
+exploratory = potatorar_update[which(potatorar_update$Experiment == 2015), ]
+exploratory$yields_average = log_transformation(exploratory$yields_average)
+confirmatory  = potatorar_update[which(potatorar_update$Experiment == 2017), ]
+confirmatory$yields_average = log_transformation(confirmatory$yields_average)
+potatorar_update$yields_average = log_transformation(potatorar_update$yields_average)
+```
+
+```{r}
+claderich_e = exploratory[, c(3,grep("claderich",colnames(exploratory)))]
+claderich_e=cbind(exploratory$FieldID,claderich_e)
+
+claderich_c = confirmatory[, c(3,grep("claderich",colnames(confirmatory)))]
+claderich_c=cbind(confirmatory$FieldID,claderich_c)
+
+cladediv_e = exploratory[, c(3,grep("cladediv",colnames(exploratory)))]
+cladediv_e=cbind(exploratory$FieldID,cladediv_e)
+
+cladediv_c = confirmatory[,c(3, grep("cladediv",colnames(confirmatory)))]
+cladediv_c=cbind(confirmatory$FieldID,cladediv_c)
+```
+
+Lasso 2015
+
+Split the data
+```{r}
+set.seed(86)
+Xmat <- as.matrix(cbind(cladediv_e[,c(2,grep("cladediv",colnames(cladediv_e)))],                            claderich_e[,c(2,grep("claderich",colnames(claderich_e)))]))
+Ymat <- potatorar_update$yields_average [which(potatorar_update$Experiment == 2015)]
+train = sample(1:nrow(Xmat), nrow(Xmat)/2)
+test = (-train)
+x_test = as.matrix(Xmat[test, ])
+x_train = as.matrix(Xmat[train,])
+y_test = Ymat[test]
+y_train = Ymat[train]
+```
+
+identifying best lamda
+```{r}
+set.seed(86)
+potatorar.lasso.cv <- cv.glmnet(Xmat, Ymat, nfold=5)
+plot(potatorar.lasso.cv)
+opt_lambda = potatorar.lasso.cv$lambda.min
+opt_lambda
+```
+
+Using this value, let us train the lasso model again.
+Checking the obs
+```{r}
+set.seed(86)
+potatorar.lasso<- glmnet(Xmat, Ymat, alpha = 1, lambda = opt_lambda)
+pred <- predict(potatorar.lasso, s = opt_lambda, newx = x_test)
+final <- cbind(y_test, pred)
+final
+```
+
+Inspecting beta coefficients
+```{r}
+coef(potatorar.lasso)
+```
+
+```{r}
+#MSE
+MSE = sum((y_test - pred)^2)
+#AVG - test mean square error
+value <- mean((y_test - pred)^2)
+value
+```
+
+
+
+Lasso 2017
+
+Split the data
+```{r}
+set.seed(86)
+Xmat_17 <- as.matrix(cbind(cladediv_c[,c(2,grep("cladediv",colnames(cladediv_c)))],                            claderich_c[,c(2,grep("claderich",colnames(claderich_c)))]))
+Ymat_17 <- potatorar_update$yields_average [which(potatorar_update$Experiment == 2017)]
+                  
+train_17 = sample(1:nrow(Xmat_17), nrow(Xmat_17)/2)
+test_17 = (-train_17)
+x_test_17 = as.matrix(Xmat_17[test_17, ])
+x_train_17 = as.matrix(Xmat_17[train_17,])
+y_test_17 = Ymat_17[test_17]
+y_train_17 = Ymat_17[train_17]
+```
+
+identifying best lamda
+```{r}
+set.seed(86)
+potatorar.lasso.cv_17 <- cv.glmnet(x_train_17, y_train_17, nfold=5)
+plot(potatorar.lasso.cv_17)
+opt_lambda_17 = potatorar.lasso.cv_17$lambda.min
+opt_lambda_17
+```
+
+Using this value, let us train the lasso model again.
+Checking the obs
+```{r}
+potatorar.lasso_17<- glmnet(x_train_17, y_train_17, lambda = opt_lambda_17)
+pred_17 <- predict(potatorar.lasso_17, s = opt_lambda_17, newx = x_test_17)
+final_17 <- cbind(y_test_17, pred_17)
+final_17
+```
+
+Inspecting beta coefficients
+```{r}
+coef(potatorar.lasso_17)
+```
+```{r}
+#MSE
+MSE_2017 = sum((y_test_17 - pred_17)^2)
+#AVG - test mean square error
+value_17 <- mean((y_test_17 - pred_17)^2)
+value_17
+```
+
+ALL lasso
+
+```{r}
+set.seed(86)
+Xmat_all <- as.matrix(potatorar_update[,c(3,grep("clade",colnames(potatorar_update)))])
+Ymat_all <- potatorar_update$yields_average 
+train_all = sample(1:nrow(Xmat_all), nrow(Xmat_all)/2)
+test_all = (-train_all)
+x_test_all = as.matrix(Xmat_all[test_all, ])
+x_train_all = as.matrix(Xmat_all[train_all,])
+y_test_all = Ymat_all[test_all]
+y_train_all = Ymat_all[train_all]
+```
+
+```{r}
+set.seed(86)
+potatorar.lasso.cv_all <- cv.glmnet(x_train_all, y_train_all, nfold=5)
+plot(potatorar.lasso.cv_all)
+opt_lambda_all = potatorar.lasso.cv_all$lambda.min
+opt_lambda_all
+```
+
+```{r}
+potatorar.lasso_all<- glmnet(x_train_all, y_train_all, lambda = opt_lambda_all)
+pred_all <- predict(potatorar.lasso_all, s = opt_lambda_all, newx = x_test_all)
+final_all <- cbind(y_test_all, pred_all)
+final_all
+```
+
+```{r}
+coef(potatorar.lasso_all)
+```
+
+```{r}
+#MSE
+sum_MSE = sum((y_test_all - pred_all)^2)
+#AVG - test mean square error
+mse_test_value <- mean((y_test_all - pred_all)^2)
+mse_test_value
+```
+
+
+linear regression
+```{r}
+set.seed(86)
+Xmat_regre<- as.matrix(potatorar_update[,c(3, 6,grep("clade",colnames(potatorar_update)))])
+train_regre = sample(1:nrow(Xmat_regre), nrow(Xmat_regre)/2)
+test_regre = (-train_regre)
+test_regre =as.matrix(Xmat_regre[test_regre, ])
+test_regre = as.data.frame(test_regre)
+train_regre = as.matrix(Xmat_regre[train_regre,])
+train_regre = as.data.frame(train_regre)
+train_regre
+```
+
+```{r}
+set.seed(86)
+lm_potato <- lm(yields_average~ Experiment+cladediv0.1+claderich0.1+cladediv0.8+claderich0.45+ claderich0.55+cladediv0.7, data=train_regre)
+summary(lm_potato)
+```
+
+
+```{r}
+set.seed(86)
+pred_regre = predict(lm_potato, test_regre)
+#MSE
+sum_regre = sum((test_regre$yields_average - pred_regre)^2)
+#AVG - test mean square error
+mse_regre_value <- mean((test_regre$yields_average - pred_regre)^2)
+mse_regre_value
+```
+
+diagnostic
+```{r}
+set.seed(86)
+stdresid <- rstudent(lm_potato) # studentized residual
+pii <- hatvalues(lm_potato)  # leverage
+cooki <- cooks.distance(lm_potato)  # cook's distance
+
+par(mfrow=c(2,2),mgp=c(1.8,.5,0))
+plot(lm_potato, which=1, pch=21, bg="#844685", cex=1.2, lwd=2)
+# qqplot
+
+qqnorm(stdresid, cex=1.2,pch=21,bg="#844685",main="Normal QQ Plot of Residuals")
+abline(0, 1, col="red", lwd=3)
+# leverage value
+plot(pii, pch=21, bg="#844685", cex=1.2, main="Leverage Value")
+# cooks distance
+plot(cooki, pch=21, bg="#844685", cex=1.2, main="Cook's Distance")
+```
+
+```{r}
+set.seed(86)
+idrm <- which(cooki>0.8)
+train_regre[idrm,]
+```
+```{r}
+train_regre <- train_regre[-idrm,]
+dim(train_regre)
+```
+
+```{r}
+set.seed(86)
+lm_potato <- lm(yields_average~ Experiment+cladediv0.1+claderich0.1+cladediv0.8+claderich0.45+ claderich0.55+cladediv0.7, data=train_regre)
+summary(lm_potato)
+```
+```{r}
+set.seed(86)
+pred_regre = predict(lm_potato, test_regre)
+#MSE
+sum_regre = sum((test_regre$yields_average - pred_regre)^2)
+#AVG - test mean square error
+mse_regre_value <- mean((test_regre$yields_average - pred_regre)^2)
+mse_regre_value
+```
+diagnostic
+```{r}
+set.seed(86)
+stdresid <- rstudent(lm_potato) # studentized residual
+pii <- hatvalues(lm_potato)  # leverage
+cooki <- cooks.distance(lm_potato)  # cook's distance
+
+par(mfrow=c(2,2),mgp=c(1.8,.5,0))
+plot(lm_potato, which=1, pch=21, bg="#844685", cex=1.2, lwd=2)
+# qqplot
+
+qqnorm(stdresid, cex=1.2,pch=21,bg="#844685",main="Normal QQ Plot of Residuals")
+abline(0, 1, col="red", lwd=3)
+# leverage value
+plot(pii, pch=21, bg="#844685", cex=1.2, main="Leverage Value")
+# cooks distance
+plot(cooki, pch=21, bg="#844685", cex=1.2, main="Cook's Distance")
+```
+
+
+
+
+Lasso using selected features
+```{r}
+set.seed(86)
+selected_features = c("Experiment","cladediv0.1","claderich0.1","cladediv0.8","claderich0.45", "claderich0.55","cladediv0.7")
+Xmat_selected = as.matrix(potatorar_update[,selected_features])
+Ymat_selected <- potatorar_update$yields_average
+                  
+train_selected = sample(1:nrow(Xmat_selected ), nrow(Xmat_selected )/2)
+test_selected  = (-train_selected )
+x_test_selected  = as.matrix(Xmat_selected [test_selected , ])
+x_train_selected  = as.matrix(Xmat_selected [train_selected ,])
+y_test_selected  = Ymat_selected[test_selected ]
+y_train_selected  = Ymat_selected[train_selected ]
+train_selected
+```
+
+```{r}
+set.seed(86)
+potatorar.lasso.cv_selected <- cv.glmnet(x_train_selected, y_train_selected, nfold=5)
+plot(potatorar.lasso.cv_selected)
+title("Cross Validation for Tuning Parameter λ", line = -1)
+opt_lambda_selected = potatorar.lasso.cv_selected$lambda.min
+opt_lambda_selected
+```
+
+```{r}
+set.seed(86)
+potatorar.lasso.cv_selected<- glmnet(x_train_selected, y_train_selected, lambda = opt_lambda_selected)
+pred_selected <- predict(potatorar.lasso.cv_selected, s = opt_lambda_selected, newx = x_test_selected)
+final_selected <- cbind(y_test_selected, pred_selected)
+final_selected
+```
+```{r}
+#MSE
+set.seed(86)
+sum_selected = sum((y_test_selected - pred_selected)^2)
+#AVG - test mean square error
+mse_selected_value <- mean((y_test_selected - pred_selected)^2)
+mse_selected_value
+```
+
+
+
