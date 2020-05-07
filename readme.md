@@ -23,4 +23,49 @@ git clone https://github.com/solislemuslab/potato-lankau.git
 # Songyang's Files 
 - Python Scripts will be .py files
 - All visualization will be .ipynb files with naming rules: week number + date
-- a serious bug has been identified in week 6. Thus, week 3~5 work should not be cited. All analysis has been redone in week 6. For the sake of integrity, the buggy files are not deleted. 
+- A serious bug in work for week 3 and week 4 work has been identified in week 6. 
+Thus, week 3 and week 4 work should not be cited. All analysis has been redone in week 6. 
+For the sake of integrity, the buggy files are not deleted. 
+## summary for each file
+- w010119  
+Conducted exploratory data analysis.  
+Visualized the pattern for both potato yield and disease severity.  
+- w020202  
+Checked y distribution. Converted to normal distribution.  
+Plotted correlation Heat Map for meta data and yt.  
+Plotted standard deviation for each field (biological difference).  
+Tried out basic random forest model.  
+- w030209 (buggy)  
+Plotted euclidean distance between different fields. (no bugs here)  
+Tuning Random Forest models. (bugs exist in train-test split)  
+- w040216 (buggy)  
+Explored XGBoost models. (bugs exist in train-test split)   
+- w050223
+Plotted correlation Heat Map for part of (selected) meta+taxa data and yt.     
+Plotted linear relationship between each selected feature and y/yt.  
+- w060303
+Corrected bugs in week 3 and week 4 by redoing train-test split.  
+Explored PCA and Keras Auto Encoder.  
+- w070319  
+Explored Pair Wise Selection. 
+Explored Ridge Regression.  
+- w080402
+Further explored Ridge Regression.  
+Explored Lasso Regression.  
+Visualized two best models.  
+- w090408 
+Visualized full model selection tree.  
+- w100416
+Verified the difference between Linear Regression and Ridge Regression.  
+- w110506  
+Created for the purpose of writing my report. Nothing new.      
+
+
+
+
+
+
+
+
+
+
